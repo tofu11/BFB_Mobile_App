@@ -10,7 +10,7 @@ import {
   StyleSheet 
 } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from './firebase';
+import { auth } from '../../lib/firebase';
 import { router } from 'expo-router';
 
 export default function Login() {
