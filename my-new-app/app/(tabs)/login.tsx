@@ -1,34 +1,19 @@
+
 import React, { useState } from 'react';
 import { 
   View, 
   Text, 
   TextInput, 
-  Button, 
-  StyleSheet, 
   Alert, 
   ActivityIndicator,
-  TouchableOpacity 
+  TouchableOpacity,
+  StyleSheet 
 } from 'react-native';
-import { getAuth } from 'firebase/auth';  // Web SDK version
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from './firebase';
+import { router } from 'expo-router';
 
-// Type definitions for navigation
-type RootStackParamList = {
-  Explore: undefined;
-  SignUp: undefined;
-  ForgotPassword: undefined;
-};
-
-type LoginScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList, 
-  'Explore'
->;
-
-interface LoginProps {
-  navigation: LoginScreenNavigationProp;
-}
-
-export default function Login({ navigation }: LoginProps) {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,8 +27,8 @@ export default function Login({ navigation }: LoginProps) {
     setLoading(true);
 
     try {
-      await auth().signInWithEmailAndPassword(email, password);
-      navigation.navigate('Explore');
+      await signInWithEmailAndPassword(auth, email, password);
+      router.push('/(tabs)');
     } catch (error: any) {
       let errorMessage = 'Login failed. Please try again.';
       
@@ -69,14 +54,6 @@ export default function Login({ navigation }: LoginProps) {
     }
   };
 
-  const handleForgotPassword = () => {
-    navigation.navigate('ForgotPassword');
-  };
-
-  const handleSignUp = () => {
-    navigation.navigate('SignUp');
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome Back</Text>
@@ -88,7 +65,6 @@ export default function Login({ navigation }: LoginProps) {
         style={styles.input}
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholderTextColor="#999"
       />
       
       <TextInput
@@ -98,30 +74,18 @@ export default function Login({ navigation }: LoginProps) {
         style={styles.input}
         secureTextEntry
         autoCapitalize="none"
-        placeholderTextColor="#999"
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color="#3a86ff" style={styles.loader} />
+        <ActivityIndicator size="large" color="#3a86ff" />
       ) : (
         <>
-          <TouchableOpacity 
-            style={styles.loginButton} 
-            onPress={handleLogin}
-            disabled={loading}
-          >
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.buttonText}>Login</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleForgotPassword}>
-            <Text style={styles.linkText}>Forgot Password?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.signUpButton}
-            onPress={handleSignUp}
-          >
-            <Text style={styles.signUpText}>Don't have an account? Sign Up</Text>
+          <TouchableOpacity onPress={() => router.push('/signup')}>
+            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
           </TouchableOpacity>
         </>
       )}
@@ -168,21 +132,7 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#3a86ff',
     textAlign: 'center',
-    marginBottom: 20,
-  },
-  signUpButton: {
     marginTop: 20,
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#3a86ff',
-  },
-  signUpText: {
-    color: '#3a86ff',
-    fontWeight: 'bold',
-  },
-  loader: {
-    marginVertical: 20,
   },
 });
+
