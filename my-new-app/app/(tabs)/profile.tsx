@@ -5,24 +5,42 @@ import {
   Text, 
   TouchableOpacity, 
   ScrollView,
-  Alert 
+  Alert,
+  TextInput,
+  Modal
 } from 'react-native';
 import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import { signOut, User, updateProfile } from 'firebase/auth';
 import { router } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
+interface ProfileRowProps {
+  label: string;
+  value?: string;
+  onPress: () => void;
+}
+
+interface ContactRowProps {
+  label: string;
+  value: string;
+  iconName: string;
+  iconColor: string;
+}
+
 export default function ProfileScreen() {
-  const [user, setUser] = useState(auth.currentUser);
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
       setUser(user);
+      setDisplayName(user?.displayName || '');
     });
     return unsubscribe;
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = async (): Promise<void> => {
     try {
       await signOut(auth);
       router.replace('/login');
@@ -31,7 +49,21 @@ export default function ProfileScreen() {
     }
   };
 
-  const ProfileRow = ({ label, value, onPress, showIcon = false, iconName = 'plus' }) => (
+  const handleSaveName = async (): Promise<void> => {
+    if (!user) return;
+    
+    try {
+      await updateProfile(user, {
+        displayName: displayName.trim()
+      });
+      setEditModalVisible(false);
+      Alert.alert('Success', 'Name updated successfully');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update name');
+    }
+  };
+
+  const ProfileRow: React.FC<ProfileRowProps> = ({ label, value, onPress }) => (
     <View style={styles.row}>
       <View style={styles.rowContent}>
         <Text style={styles.label}>{label}</Text>
@@ -45,29 +77,27 @@ export default function ProfileScreen() {
     </View>
   );
 
-  const ContactRow = ({ label, value, iconName, iconColor }) => (
+  const ContactRow: React.FC<ContactRowProps> = ({ label, value, iconName, iconColor }) => (
     <View style={styles.contactRow}>
       <View>
         <Text style={styles.contactLabel}>{label}</Text>
         <Text style={styles.contactValue}>{value}</Text>
       </View>
       <View style={[styles.iconContainer, { backgroundColor: iconColor }]}>
-        <IconSymbol name={iconName} size={20} color="white" />
+        <IconSymbol name={iconName as any} size={20} color="white" />
       </View>
     </View>
   );
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
         <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.editButton}>Edit</Text>
+          <Text style={styles.editButton}>Logout</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Profile Avatar and Name */}
       <View style={styles.profileSection}>
         <View style={styles.avatar}>
           <IconSymbol name="person.fill" size={40} color="white" />
@@ -77,8 +107,12 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
-      {/* Profile Details */}
       <View style={styles.section}>
+        <ProfileRow 
+          label="Name" 
+          value={user?.displayName || undefined}
+          onPress={() => setEditModalVisible(true)}
+        />
         <ProfileRow 
           label="Birthday" 
           onPress={() => Alert.alert('Add Birthday', 'Birthday feature coming soon')}
@@ -89,7 +123,6 @@ export default function ProfileScreen() {
         />
       </View>
 
-      {/* Contact Information */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Contact Information</Text>
         <ContactRow 
@@ -106,13 +139,48 @@ export default function ProfileScreen() {
         />
       </View>
 
-      {/* Add Family Member */}
       <TouchableOpacity 
         style={styles.addFamilyButton}
         onPress={() => Alert.alert('Add Family Member', 'Family member feature coming soon')}
       >
         <Text style={styles.addFamilyText}>+ Add Family Member</Text>
       </TouchableOpacity>
+
+      <Modal
+        visible={editModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Name</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={displayName}
+              onChangeText={setDisplayName}
+              placeholder="Enter your name"
+              autoFocus
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => {
+                  setDisplayName(user?.displayName || '');
+                  setEditModalVisible(false);
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.saveButton]}
+                onPress={handleSaveName}
+              >
+                <Text style={styles.saveButtonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -239,6 +307,58 @@ const styles = StyleSheet.create({
   addFamilyText: {
     fontSize: 16,
     color: '#007AFF',
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 20,
+    width: '80%',
+    maxWidth: 300,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  modalButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#f0f0f0',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+  },
+  cancelButtonText: {
+    color: '#333',
+    fontWeight: '500',
+  },
+  saveButtonText: {
+    color: 'white',
     fontWeight: '500',
   },
 });
