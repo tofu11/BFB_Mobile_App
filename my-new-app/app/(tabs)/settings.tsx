@@ -1,24 +1,24 @@
+import { Header } from '@/components/Header';
+import { MenuIcon } from '@/components/MenuIcon';
+import { ScreenTitle } from '@/components/ScreenTitle';
+import { StatusBarComponent } from '@/components/StatusBarComponent';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
-import { ThemedText } from '@/components/ThemedText';
-import { StatusBarComponent } from '@/components/StatusBarComponent';
-import { Header } from '@/components/Header';
-import { ScreenTitle } from '@/components/ScreenTitle';
-import { MenuIcon } from '@/components/MenuIcon';
 
-export default function HomeScreen() {
+export default function SettingsScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.headerBackground} />
       <ThemedView style={styles.whiteBackground} />
       <StatusBarComponent />
-      <Header title="Home" />
-      <ScreenTitle title="Home" />
+      <Header title="Settings" />
+      <ScreenTitle title="Settings" />
       <MenuIcon />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <ThemedView style={styles.content}>
-          <ThemedText>This is the home screen content.</ThemedText>
+          <ThemedText>App settings and preferences will go here.</ThemedText>
         </ThemedView>
       </ScrollView>
     </ThemedView>

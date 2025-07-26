@@ -7,18 +7,18 @@ import { Header } from '@/components/Header';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { MenuIcon } from '@/components/MenuIcon';
 
-export default function HomeScreen() {
+export default function MessagesScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.headerBackground} />
       <ThemedView style={styles.whiteBackground} />
       <StatusBarComponent />
-      <Header title="Home" />
-      <ScreenTitle title="Home" />
+      <Header title="Messages" />
+      <ScreenTitle title="Messages" />
       <MenuIcon />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <ThemedView style={styles.content}>
-          <ThemedText>This is the home screen content.</ThemedText>
+          <ThemedText>Your messages will appear here.</ThemedText>
         </ThemedView>
       </ScrollView>
     </ThemedView>
