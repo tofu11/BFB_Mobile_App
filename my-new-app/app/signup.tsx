@@ -94,9 +94,8 @@ export default function SignUp() {
             style={styles.input}
             secureTextEntry
             autoCapitalize="none"
-            textContentType="none"
-            autoComplete="off"
-            passwordRules=""
+            textContentType="newPassword"
+            autoComplete="new-password"
           />
 
           <TextInput
@@ -106,9 +105,8 @@ export default function SignUp() {
             style={styles.input}
             secureTextEntry
             autoCapitalize="none"
-            textContentType="none"
-            autoComplete="off"
-            passwordRules=""
+            textContentType="newPassword"
+            autoComplete="new-password"
           />
 
           {loading ? (
