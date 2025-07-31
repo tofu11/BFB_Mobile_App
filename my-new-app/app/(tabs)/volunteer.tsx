@@ -119,6 +119,15 @@ export default function VolunteerScreen() {
       );
     }
 
+    // Add empty cells to fill the last row
+    const totalCells = firstDay + daysInMonth;
+    const remainingCells = 7 - (totalCells % 7);
+    if (remainingCells < 7) {
+      for (let i = 0; i < remainingCells; i++) {
+        days.push(<View key={`empty-end-${i}`} style={styles.dayCell} />);
+      }
+    }
+
     return (
       <View style={styles.calendar}>
         <View style={styles.calendarHeader}>
@@ -216,6 +225,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 12,
     padding: 20,
+    paddingBottom: 20,
     marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -247,13 +257,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-around',
+    marginBottom: 0,
   },
   dayCell: {
     width: '14%',
     aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: 5,
+    marginVertical: 2,
   },
   dayText: {
     fontSize: 16,
