@@ -1,22 +1,51 @@
 
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Alert, 
-  ActivityIndicator,
-  TouchableOpacity,
-  StyleSheet 
-} from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
 import { router } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SimpleIOSAuthService } from '../../lib/simpleIOSFix';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Test Firebase connection on component mount
+  React.useEffect(() => {
+    const testConnection = async () => {
+      try {
+        const connected = await SimpleIOSAuthService.testConnection();
+        console.log('Firebase connection status:', connected);
+      } catch (error) {
+        console.log('Firebase connection test failed:', error);
+      }
+    };
+    testConnection();
+  }, []);
+
+  const testFirebaseConnection = async () => {
+    try {
+      setLoading(true);
+      const connected = await SimpleIOSAuthService.testConnection();
+      if (connected) {
+        Alert.alert('Success', 'Firebase connection is working!');
+      } else {
+        Alert.alert('Connection Test', 'Firebase connection failed');
+      }
+    } catch (error: any) {
+      console.log('Firebase connection test error:', error);
+      Alert.alert('Connection Test', `Error: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -27,7 +56,10 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      console.log('Attempting to sign in with:', email);
+      const result = await SimpleIOSAuthService.signInWithEmail(email, password);
+      const user = result.user;
+      console.log('Sign in successful:', user.uid);
       router.push('/(tabs)');
     } catch (error: any) {
       let errorMessage = 'Login failed. Please try again.';
@@ -46,6 +78,15 @@ export default function Login() {
         case 'auth/user-disabled':
           errorMessage = 'This account has been disabled';
           break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+          break;
+        case 'auth/timeout':
+          errorMessage = 'Request timed out. Please try again.';
+          break;
+        default:
+          errorMessage = `Login failed: ${error.message}`;
+          console.log('Firebase Auth Error:', error.code, error.message);
       }
 
       Alert.alert('Error', errorMessage);
@@ -82,6 +123,10 @@ export default function Login() {
         <>
           <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
             <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.testButton} onPress={testFirebaseConnection}>
+            <Text style={styles.testButtonText}>Test Firebase Connection</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => router.push('/signup')}>
@@ -128,6 +173,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  testButton: {
+    backgroundColor: '#ff6b35',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  testButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
   },
   linkText: {
     color: '#3a86ff',

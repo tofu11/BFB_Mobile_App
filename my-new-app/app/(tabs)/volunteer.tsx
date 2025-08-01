@@ -1,21 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useEvents } from '@/contexts/EventContext';
+import { auth } from '@/lib/firebase';
+import { User } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
 import {
+  Alert,
+  ScrollView,
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Alert
+  View
 } from 'react-native';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function VolunteerScreen() {
+  const { getUserEvents, getUpcomingEvents } = useEvents();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [isTracking, setIsTracking] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [joinedEvents, setJoinedEvents] = useState<Array<any>>([]);
+
+  // This would typically come from a database or context based on user's registrations
+  // For now, we'll simulate this with local state that gets populated when user joins events
+  const hasJoinedEvent = user && joinedEvents.length > 0;
+
+  // Function to add an event when user registers (this would be called from program detail screens)
+  // Currently not used but would be called when users register for events
+
+  // Load user's joined events from context
+  useEffect(() => {
+    if (user) {
+      const userEvents = getUserEvents(user.uid);
+      setJoinedEvents(userEvents);
+      console.log('Loaded user events:', userEvents);
+    } else {
+      setJoinedEvents([]);
+    }
+  }, [user, getUserEvents]);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
+      setUser(user);
+      if (!user) {
+        // Clear joined events when user logs out
+        setJoinedEvents([]);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -161,6 +196,37 @@ export default function VolunteerScreen() {
       </View>
 
       <View style={styles.content}>
+        {hasJoinedEvent && joinedEvents.map((event, index) => (
+          <View key={index} style={styles.eventInfoCard}>
+            <Text style={styles.eventInfoTitle}>Upcoming Event</Text>
+            <Text style={styles.eventInfoProgram}>{event.programTitle}</Text>
+            <Text style={styles.eventInfoDate}>Date: {event.eventDate}</Text>
+            <Text style={styles.eventInfoTime}>Time: {event.eventTime}</Text>
+            <Text style={styles.eventInfoType}>Role: {event.participationType}</Text>
+            <Text style={styles.eventInfoStatus}>Status: {event.status}</Text>
+            {event.volunteerDetails && (
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsTitle}>Volunteer Details:</Text>
+                <Text style={styles.detailsText}>Name: {event.volunteerDetails.name}</Text>
+                <Text style={styles.detailsText}>Email: {event.volunteerDetails.email}</Text>
+                <Text style={styles.detailsText}>Gender: {event.volunteerDetails.gender}</Text>
+                <Text style={styles.detailsText}>Leaves: {event.volunteerDetails.leaves}</Text>
+              </View>
+            )}
+            {event.familyDetails && (
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsTitle}>Family Details:</Text>
+                <Text style={styles.detailsText}>Family Name: {event.familyDetails.name}</Text>
+                <Text style={styles.detailsText}>Members: {event.familyDetails.members}</Text>
+                <Text style={styles.detailsText}>Email: {event.familyDetails.email}</Text>
+              </View>
+            )}
+            <Text style={styles.eventInfoNote}>
+              You're registered for this event!
+            </Text>
+          </View>
+        ))}
+
         <View style={styles.totalHoursCard}>
           <Text style={styles.totalHoursLabel}>Total Hours Today</Text>
           <Text style={styles.totalHoursValue}>
@@ -220,6 +286,48 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+  },
+  eventInfoCard: {
+    backgroundColor: '#E8F5E8',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  eventInfoTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+    marginBottom: 8,
+  },
+  eventInfoProgram: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1976D2',
+    marginBottom: 8,
+  },
+  eventInfoDate: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  eventInfoTime: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  eventInfoNote: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontStyle: 'italic',
   },
   calendar: {
     backgroundColor: 'white',
@@ -373,5 +481,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     fontFamily: 'monospace',
+  },
+  eventInfoType: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  eventInfoStatus: {
+    fontSize: 14,
+    color: '#4CAF50',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  detailsSection: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  detailsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 6,
+  },
+  detailsText: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 2,
   },
 });

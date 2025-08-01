@@ -1,10 +1,10 @@
+import { HapticTab } from '@/components/HapticTab';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useColorScheme } from '@/hooks/useColorScheme';
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
 import '../../lib/firebase';
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 
 
@@ -58,6 +58,20 @@ export default function TabLayout() {
         options={{
           title: 'Messages',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="message.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="volunteer"
+        options={{
+          title: 'Volunteer',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="heart.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="login"
+        options={{
+          title: 'Login',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.circle" color={color} />,
         }}
       />
       <Tabs.Screen

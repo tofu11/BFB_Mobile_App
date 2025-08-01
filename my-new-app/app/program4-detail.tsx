@@ -1,8 +1,10 @@
 import { Header } from '@/components/Header';
 import { StatusBarComponent } from '@/components/StatusBarComponent';
 import { ThemedView } from '@/components/ThemedView';
+import { auth } from '@/lib/firebase';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { User } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { PanGestureHandler } from 'react-native-gesture-handler';
 import Animated, { runOnJS, useAnimatedGestureHandler, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
@@ -39,17 +41,29 @@ export default function Program4DetailScreen() {
   const [familyModalVisible, setFamilyModalVisible] = useState(false);
   const [volunteerModalVisible, setVolunteerModalVisible] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState<ProgramData | null>(null);
-  
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+
   // Family form states
   const [familyName, setFamilyName] = useState('');
   const [familyMembers, setFamilyMembers] = useState('');
   const [familyEmail, setFamilyEmail] = useState('');
-  
+
   // Volunteer form states
   const [volunteerName, setVolunteerName] = useState('');
   const [volunteerEmail, setVolunteerEmail] = useState('');
   const [volunteerGender, setVolunteerGender] = useState('');
   const [volunteerLeaves, setVolunteerLeaves] = useState('');
+
+  // Event date and time
+  const eventDate = '8/20/2025';
+  const eventTime = '4:45pm';
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
+      setUser(user);
+    });
+    return unsubscribe;
+  }, []);
 
   const handleBack = () => {
     router.back();
@@ -64,11 +78,33 @@ export default function Program4DetailScreen() {
   };
 
   const handleFamilyParticipant = (program: ProgramData) => {
+    if (!user) {
+      Alert.alert(
+        'Login Required',
+        'Please sign in to join as a Family Participant',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In', onPress: () => router.push('/(tabs)/login') }
+        ]
+      );
+      return;
+    }
     setSelectedProgram(program);
     setFamilyModalVisible(true);
   };
 
   const handleStudentVolunteer = (program: ProgramData) => {
+    if (!user) {
+      Alert.alert(
+        'Login Required',
+        'Please sign in to join as a Student Volunteer',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In', onPress: () => router.push('/(tabs)/login') }
+        ]
+      );
+      return;
+    }
     setSelectedProgram(program);
     setVolunteerModalVisible(true);
   };
@@ -134,6 +170,10 @@ export default function Program4DetailScreen() {
           <Image source={{ uri: program.imageUrl }} style={styles.image} />
           <Text style={styles.title}>{program.title}</Text>
           <Text style={styles.description}>{program.description}</Text>
+          <View style={styles.eventInfo}>
+            <Text style={styles.eventDate}>Event Date: {eventDate}</Text>
+            <Text style={styles.eventTime}>Time: {eventTime}</Text>
+          </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={() => handleFamilyParticipant(program)}>
               <Text style={styles.buttonText}>Family Participant</Text>
@@ -353,6 +393,25 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: '#666',
     marginBottom: 16,
+  },
+  eventInfo: {
+    backgroundColor: '#F0F8FF',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#FB8500',
+  },
+  eventDate: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  eventTime: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
   },
   buttonContainer: {
     flexDirection: 'row',
