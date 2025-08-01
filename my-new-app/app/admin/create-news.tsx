@@ -1,57 +1,57 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView, 
-  Alert,
-  KeyboardAvoidingView,
-  Platform 
-} from 'react-native';
-import { ThemedView } from '@/components/ThemedView';
-import { StatusBarComponent } from '@/components/StatusBarComponent';
-import { Header } from '@/components/Header';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { ThemedView } from '@/components/ThemedView';
+import { Header } from '@/components/Header';
+import { StatusBarComponent } from '@/components/StatusBarComponent';
 
 export default function CreateNewsScreen() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [author, setAuthor] = useState('');
-  const [priority, setPriority] = useState<'high' | 'medium' | 'low'>('medium');
+  const [imageUrl, setImageUrl] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    if (!title || !content || !author) {
-      Alert.alert('Error', 'Please fill in all required fields');
+    if (!title.trim() || !content.trim()) {
+      Alert.alert('Error', 'Please fill in title and content');
       return;
     }
 
+    setLoading(true);
+    console.log('🚀 Starting form submission...');
+
     try {
-      const newsItem = {
+      const newsData = {
         title: title.trim(),
         content: content.trim(),
-        author: author.trim(),
-        priority,
-        date: new Date().toISOString().split('T')[0],
+        imageUrl: imageUrl.trim() || null,
         createdAt: new Date(),
         published: true
       };
 
-      const docRef = await addDoc(collection(db, 'news'), newsItem);
-      Alert.alert('Success', `News article created! ID: ${docRef.id}`, [
+      console.log('📝 Creating document with data:', newsData);
+
+      const docRef = await addDoc(collection(db, 'news'), newsData);
+      
+      console.log('✅ Document created successfully:', docRef.id);
+      
+      Alert.alert('Success', 'News article created successfully!', [
         { text: 'OK', onPress: () => router.back() }
       ]);
-      
+
+      // Clear form
       setTitle('');
       setContent('');
-      setAuthor('');
-      setPriority('medium');
-      
-    } catch (error: any) {
-      Alert.alert('Error', `Failed to create news: ${error?.message || 'Unknown error'}`);
+      setImageUrl('');
+
+    } catch (error) {
+      console.error('❌ Error creating document:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      Alert.alert('Error', `Failed to create news article: ${errorMessage}`);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,7 +62,7 @@ export default function CreateNewsScreen() {
       <StatusBarComponent />
       <Header title="Create News" />
       
-      <ScrollView style={styles.content}>
+      <ScrollView style={styles.content} contentContainerStyle={styles.scrollContent}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
@@ -89,20 +89,23 @@ export default function CreateNewsScreen() {
             numberOfLines={6}
           />
 
-          <Text style={styles.label}>Author *</Text>
+          <Text style={styles.label}>Image URL (optional)</Text>
           <TextInput
             style={styles.input}
-            value={author}
-            onChangeText={setAuthor}
-            placeholder="Enter author name"
+            value={imageUrl}
+            onChangeText={setImageUrl}
+            placeholder="https://example.com/image.jpg"
             multiline={false}
           />
 
           <TouchableOpacity 
-            style={styles.submitButton}
+            style={[styles.submitButton, loading && styles.disabledButton]}
             onPress={handleSubmit}
+            disabled={loading}
           >
-            <Text style={styles.submitButtonText}>Create Article</Text>
+            <Text style={styles.submitButtonText}>
+              {loading ? 'Creating...' : 'Create Article'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -132,10 +135,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    marginTop: 120,
+    marginTop: 0,
+  },
+  scrollContent: {
+    paddingTop: 0,
   },
   backButton: {
     padding: 15,
+    marginTop: 0,
   },
   backText: {
     color: '#FFB703',
@@ -176,6 +183,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
   },
   submitButtonText: {
     color: 'white',
