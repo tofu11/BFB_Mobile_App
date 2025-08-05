@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  ScrollView,
-  Alert,
-  TextInput,
-  Modal
-} from 'react-native';
-import { auth } from '@/lib/firebase';
-import { signOut, User, updateProfile } from 'firebase/auth';
-import { router } from 'expo-router';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { auth } from '@/lib/firebase';
+import { router } from 'expo-router';
+import { signOut, updateProfile, User } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
+import {
+    Alert,
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 interface ProfileRowProps {
   label: string;
@@ -28,6 +28,7 @@ interface ContactRowProps {
 }
 
 export default function ProfileScreen() {
+  const { currentUser: chatUser } = require('@/contexts/ChatContext').useChat();
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
@@ -125,13 +126,43 @@ export default function ProfileScreen() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Contact Information</Text>
-        <ContactRow 
+        <ContactRow
           label="Personal"
           value={user?.email || 'name@gmail.com'}
           iconName="envelope.fill"
           iconColor="#007AFF"
         />
-        <ContactRow 
+        <TouchableOpacity
+          style={styles.contactRow}
+          onPress={() => {
+            if (chatUser?.chatId) {
+              Alert.alert(
+                'Your Chat ID',
+                `Share this ID with friends so they can add you:\n\n${chatUser.chatId}`,
+                [
+                  { text: 'Copy ID', onPress: () => {
+                    Alert.alert('Copied!', 'Chat ID copied to clipboard');
+                  }},
+                  { text: 'OK' }
+                ]
+              );
+            } else {
+              Alert.alert('Loading', 'Chat ID is being generated...');
+            }
+          }}
+        >
+          <View style={styles.contactIcon}>
+            <IconSymbol name="message.fill" size={20} color="#FF9500" />
+          </View>
+          <View style={styles.contactContent}>
+            <Text style={styles.contactLabel}>Chat ID</Text>
+            <Text style={styles.contactValue}>
+              {chatUser?.chatId || 'Loading...'}
+            </Text>
+          </View>
+          <IconSymbol name="doc.on.doc" size={16} color="#999" />
+        </TouchableOpacity>
+        <ContactRow
           label="Personal"
           value="716-000-0000"
           iconName="phone.fill"

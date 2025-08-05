@@ -4,16 +4,16 @@ import { auth } from '@/lib/firebase';
 import { User } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 export default function VolunteerScreen() {
-  const { getUserEvents, getUpcomingEvents } = useEvents();
+  const { getUserEvents, getUpcomingEvents, joinedEvents: contextEvents, loading: eventsLoading } = useEvents();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [isTracking, setIsTracking] = useState(false);
@@ -30,16 +30,12 @@ export default function VolunteerScreen() {
   // Function to add an event when user registers (this would be called from program detail screens)
   // Currently not used but would be called when users register for events
 
-  // Load user's joined events from context
+  // Use events directly from Firebase context
   useEffect(() => {
-    if (user) {
-      const userEvents = getUserEvents(user.uid);
-      setJoinedEvents(userEvents);
-      console.log('Loaded user events:', userEvents);
-    } else {
-      setJoinedEvents([]);
-    }
-  }, [user, getUserEvents]);
+    // Update local state with context events for compatibility
+    setJoinedEvents(contextEvents);
+    console.log('Updated events from Firebase context:', contextEvents);
+  }, [contextEvents]);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
@@ -187,6 +183,40 @@ export default function VolunteerScreen() {
       </View>
 
       <View style={styles.content}>
+        {/* Firebase Status Indicator */}
+        <View style={styles.firebaseStatus}>
+          <Text style={styles.firebaseStatusText}>
+            {eventsLoading ? '🔄 Loading from Firebase...' : `📊 ${contextEvents.length} events from Firebase`}
+          </Text>
+        </View>
+
+        {/* Chat Test Section */}
+        <View style={styles.chatTestSection}>
+          <Text style={styles.chatTestTitle}>💬 Chat System Test</Text>
+          <Text style={styles.chatTestDescription}>
+            Test the real-time chat system with Firebase integration
+          </Text>
+          <TouchableOpacity
+            style={styles.chatTestButton}
+            onPress={() => {
+              // For now, just show an alert with instructions
+              Alert.alert(
+                'Chat System Ready!',
+                'Go to the Messages tab to test:\n\n' +
+                '• Your 6-digit chat ID\n' +
+                '• Add friends by ID\n' +
+                '• Send real-time messages\n' +
+                '• Create group chats\n' +
+                '• Share images & files\n\n' +
+                'All data is saved to Firebase!',
+                [{ text: 'Got it!' }]
+              );
+            }}
+          >
+            <Text style={styles.chatTestButtonText}>Test Chat Features</Text>
+          </TouchableOpacity>
+        </View>
+
         {hasJoinedEvent && joinedEvents.map((event, index) => (
           <View key={index} style={styles.eventInfoCard}>
             <Text style={styles.eventInfoTitle}>Upcoming Event</Text>
@@ -499,5 +529,51 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
     marginBottom: 2,
+  },
+  firebaseStatus: {
+    backgroundColor: '#e3f2fd',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196F3',
+  },
+  firebaseStatusText: {
+    fontSize: 14,
+    color: '#1976D2',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  chatTestSection: {
+    backgroundColor: '#fff3cd',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ffc107',
+  },
+  chatTestTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 5,
+  },
+  chatTestDescription: {
+    fontSize: 14,
+    color: '#856404',
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  chatTestButton: {
+    backgroundColor: '#ffc107',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  chatTestButtonText: {
+    color: '#212529',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
