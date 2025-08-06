@@ -1,8 +1,8 @@
-import { 
-  signInWithEmailAndPassword, 
+import {
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
-  onAuthStateChanged
+  onAuthStateChanged,
+  signInWithEmailAndPassword
 } from 'firebase/auth';
 import { auth } from './firebase';
 

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Platform } from 'react-native';
+import { useState } from 'react';
+import { Alert, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { IOSEnhancedAuthService } from '../lib/iosFirebaseFix';
 
 export default function IOSAuthTest() {
