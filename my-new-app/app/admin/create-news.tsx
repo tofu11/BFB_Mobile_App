@@ -99,6 +99,7 @@ export default function CreateNewsScreen() {
         author: author.trim(),
         priority,
         date: new Date().toISOString().split('T')[0],
+
         createdAt: new Date(),
         published: true
       };
@@ -175,6 +176,7 @@ export default function CreateNewsScreen() {
       case 'medium': return '#FF8C00';
       case 'low': return '#4CAF50';
       default: return '#666';
+
     }
   };
 
@@ -258,6 +260,7 @@ export default function CreateNewsScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
     </ThemedView>
   );
 }
@@ -355,5 +358,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: 'white',
+
   },
 });

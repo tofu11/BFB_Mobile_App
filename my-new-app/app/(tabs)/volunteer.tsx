@@ -1,21 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Alert
-} from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import { useEvents } from '@/contexts/EventContext';
+import { auth } from '@/lib/firebase';
+import { User } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
+import {
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 
 export default function VolunteerScreen() {
+  const { getUserEvents, getUpcomingEvents, joinedEvents: contextEvents, loading: eventsLoading } = useEvents();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date().getDate());
   const [isTracking, setIsTracking] = useState(false);
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [totalTime, setTotalTime] = useState(0);
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [joinedEvents, setJoinedEvents] = useState<Array<any>>([]);
+
+  // This would typically come from a database or context based on user's registrations
+  // For now, we'll simulate this with local state that gets populated when user joins events
+  const hasJoinedEvent = user && joinedEvents.length > 0;
+
+  // Function to add an event when user registers (this would be called from program detail screens)
+  // Currently not used but would be called when users register for events
+
+  // Use events directly from Firebase context
+  useEffect(() => {
+    // Update local state with context events for compatibility
+    setJoinedEvents(contextEvents);
+    console.log('Updated events from Firebase context:', contextEvents);
+  }, [contextEvents]);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
+      setUser(user);
+      if (!user) {
+        // Clear joined events when user logs out
+        setJoinedEvents([]);
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
@@ -161,6 +192,71 @@ export default function VolunteerScreen() {
       </View>
 
       <View style={styles.content}>
+        {/* Firebase Status Indicator */}
+        <View style={styles.firebaseStatus}>
+          <Text style={styles.firebaseStatusText}>
+            {eventsLoading ? '🔄 Loading from Firebase...' : `📊 ${contextEvents.length} events from Firebase`}
+          </Text>
+        </View>
+
+        {/* Chat Test Section */}
+        <View style={styles.chatTestSection}>
+          <Text style={styles.chatTestTitle}>💬 Chat System Test</Text>
+          <Text style={styles.chatTestDescription}>
+            Test the real-time chat system with Firebase integration
+          </Text>
+          <TouchableOpacity
+            style={styles.chatTestButton}
+            onPress={() => {
+              // For now, just show an alert with instructions
+              Alert.alert(
+                'Chat System Ready!',
+                'Go to the Messages tab to test:\n\n' +
+                '• Your 6-digit chat ID\n' +
+                '• Add friends by ID\n' +
+                '• Send real-time messages\n' +
+                '• Create group chats\n' +
+                '• Share images & files\n\n' +
+                'All data is saved to Firebase!',
+                [{ text: 'Got it!' }]
+              );
+            }}
+          >
+            <Text style={styles.chatTestButtonText}>Test Chat Features</Text>
+          </TouchableOpacity>
+        </View>
+
+        {hasJoinedEvent && joinedEvents.map((event, index) => (
+          <View key={index} style={styles.eventInfoCard}>
+            <Text style={styles.eventInfoTitle}>Upcoming Event</Text>
+            <Text style={styles.eventInfoProgram}>{event.programTitle}</Text>
+            <Text style={styles.eventInfoDate}>Date: {event.eventDate}</Text>
+            <Text style={styles.eventInfoTime}>Time: {event.eventTime}</Text>
+            <Text style={styles.eventInfoType}>Role: {event.participationType}</Text>
+            <Text style={styles.eventInfoStatus}>Status: {event.status}</Text>
+            {event.volunteerDetails && (
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsTitle}>Volunteer Details:</Text>
+                <Text style={styles.detailsText}>Name: {event.volunteerDetails.name}</Text>
+                <Text style={styles.detailsText}>Email: {event.volunteerDetails.email}</Text>
+                <Text style={styles.detailsText}>Gender: {event.volunteerDetails.gender}</Text>
+                <Text style={styles.detailsText}>Leaves: {event.volunteerDetails.leaves}</Text>
+              </View>
+            )}
+            {event.familyDetails && (
+              <View style={styles.detailsSection}>
+                <Text style={styles.detailsTitle}>Family Details:</Text>
+                <Text style={styles.detailsText}>Family Name: {event.familyDetails.name}</Text>
+                <Text style={styles.detailsText}>Members: {event.familyDetails.members}</Text>
+                <Text style={styles.detailsText}>Email: {event.familyDetails.email}</Text>
+              </View>
+            )}
+            <Text style={styles.eventInfoNote}>
+              You're registered for this event!
+            </Text>
+          </View>
+        ))}
+
         <View style={styles.totalHoursCard}>
           <Text style={styles.totalHoursLabel}>Total Hours Today</Text>
           <Text style={styles.totalHoursValue}>
@@ -220,6 +316,48 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+  },
+  eventInfoCard: {
+    backgroundColor: '#E8F5E8',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderLeftWidth: 4,
+    borderLeftColor: '#4CAF50',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  eventInfoTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2E7D32',
+    marginBottom: 8,
+  },
+  eventInfoProgram: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1976D2',
+    marginBottom: 8,
+  },
+  eventInfoDate: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 4,
+  },
+  eventInfoTime: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  eventInfoNote: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontStyle: 'italic',
   },
   calendar: {
     backgroundColor: 'white',
@@ -373,5 +511,80 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     fontFamily: 'monospace',
+  },
+  eventInfoType: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  eventInfoStatus: {
+    fontSize: 14,
+    color: '#4CAF50',
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  detailsSection: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  detailsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 6,
+  },
+  detailsText: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 2,
+  },
+  firebaseStatus: {
+    backgroundColor: '#e3f2fd',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderLeftWidth: 4,
+    borderLeftColor: '#2196F3',
+  },
+  firebaseStatusText: {
+    fontSize: 14,
+    color: '#1976D2',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  chatTestSection: {
+    backgroundColor: '#fff3cd',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
+    borderLeftWidth: 4,
+    borderLeftColor: '#ffc107',
+  },
+  chatTestTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 5,
+  },
+  chatTestDescription: {
+    fontSize: 14,
+    color: '#856404',
+    marginBottom: 12,
+    lineHeight: 18,
+  },
+  chatTestButton: {
+    backgroundColor: '#ffc107',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  chatTestButtonText: {
+    color: '#212529',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

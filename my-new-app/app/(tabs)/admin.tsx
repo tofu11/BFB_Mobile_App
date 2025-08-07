@@ -8,6 +8,7 @@ import { ScreenTitle } from '@/components/ScreenTitle';
 import { MenuIcon } from '@/components/MenuIcon';
 import { router } from 'expo-router';
 
+
 export default function AdminScreen() {
   return (
     <ThemedView style={styles.container}>
@@ -33,6 +34,7 @@ export default function AdminScreen() {
             </Text>
           </TouchableOpacity>
         </ThemedView>
+
       </ScrollView>
     </ThemedView>
   );
@@ -48,6 +50,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 200,
+
     backgroundColor: '#FFB703',
   },
   whiteBackground: {
@@ -94,4 +97,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
+
 });

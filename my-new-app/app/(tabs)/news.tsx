@@ -8,6 +8,7 @@ import { ScreenTitle } from '@/components/ScreenTitle';
 import { MenuIcon } from '@/components/MenuIcon';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
+
 interface NewsItem {
   id: string;
   title: string;
@@ -15,6 +16,7 @@ interface NewsItem {
   date: string;
   author: string;
   priority: 'high' | 'medium' | 'low';
+
 }
 
 export default function NewsScreen() {
@@ -98,6 +100,7 @@ export default function NewsScreen() {
       </View>
       <Text style={styles.newsContent}>{item.content}</Text>
     </View>
+
   );
 
   return (
@@ -127,6 +130,7 @@ export default function NewsScreen() {
           )}
         </ThemedView>
       </ScrollView>
+
     </ThemedView>
   );
 }
@@ -135,6 +139,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+
   },
   headerBackground: {
     position: 'absolute',
@@ -165,6 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
+
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -179,6 +185,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 8,
+
   },
   newsTitle: {
     fontSize: 18,
@@ -233,6 +240,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+
 
 
 
