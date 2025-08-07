@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { router } from 'expo-router';
+import { ScrollView, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import { Header } from '@/components/Header';
+import { ThemedText } from '@/components/ThemedText';
 import { StatusBarComponent } from '@/components/StatusBarComponent';
+import { Header } from '@/components/Header';
+import { ScreenTitle } from '@/components/ScreenTitle';
+import { MenuIcon } from '@/components/MenuIcon';
+import { router } from 'expo-router';
+
 
 export default function AdminScreen() {
   return (
@@ -12,44 +16,25 @@ export default function AdminScreen() {
       <ThemedView style={styles.whiteBackground} />
       <StatusBarComponent />
       <Header title="Admin" />
-      
-      <ScrollView style={styles.content}>
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Admin Panel</Text>
-          <Text style={styles.subtitle}>Manage your content</Text>
+      <ScreenTitle title="Admin Panel" />
+      <MenuIcon />
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ThemedView style={styles.content}>
+          <ThemedText style={styles.description}>
+            Admin tools and management options
+          </ThemedText>
           
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Content Management</Text>
-            
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push('/admin/create-news')}
-            >
-              <View style={styles.buttonContent}>
-                <Text style={styles.buttonIcon}>📰</Text>
-                <View style={styles.buttonTextContainer}>
-                  <Text style={styles.buttonTitle}>Create News Article</Text>
-                  <Text style={styles.buttonSubtitle}>Add new news content</Text>
-                </View>
-                <Text style={styles.buttonArrow}>›</Text>
-              </View>
-            </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.adminCard}
+            onPress={() => router.push('/admin/create-news')}
+          >
+            <Text style={styles.cardTitle}>Create News Article</Text>
+            <Text style={styles.cardDescription}>
+              Publish news and announcements for users
+            </Text>
+          </TouchableOpacity>
+        </ThemedView>
 
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push('/(tabs)/news')}
-            >
-              <View style={styles.buttonContent}>
-                <Text style={styles.buttonIcon}>📋</Text>
-                <View style={styles.buttonTextContainer}>
-                  <Text style={styles.buttonTitle}>View All News</Text>
-                  <Text style={styles.buttonSubtitle}>Manage existing articles</Text>
-                </View>
-                <Text style={styles.buttonArrow}>›</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View>
       </ScrollView>
     </ThemedView>
   );
@@ -64,86 +49,53 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 120,
+    height: 200,
+
     backgroundColor: '#FFB703',
   },
   whiteBackground: {
     position: 'absolute',
-    top: 120,
+    top: 150,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+  },
+  scrollView: {
+    flex: 1,
+    marginTop: 180,
   },
   content: {
-    flex: 1,
-    marginTop: 120,
-  },
-  formContainer: {
     padding: 20,
-    backgroundColor: '#ffffff',
-    margin: 16,
+    paddingTop: 30,
+  },
+  description: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  adminCard: {
+    backgroundColor: 'white',
+    padding: 20,
     borderRadius: 12,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: '#666',
-    marginBottom: 30,
-  },
-  section: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
+  cardTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 15,
+    fontWeight: 'bold',
     color: '#333',
+    marginBottom: 8,
   },
-  actionButton: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
-  },
-  buttonContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-  },
-  buttonIcon: {
-    fontSize: 24,
-    marginRight: 12,
-  },
-  buttonTextContainer: {
-    flex: 1,
-  },
-  buttonTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
-  },
-  buttonSubtitle: {
+  cardDescription: {
     fontSize: 14,
     color: '#666',
   },
-  buttonArrow: {
-    fontSize: 20,
-    color: '#FFB703',
-    fontWeight: 'bold',
-  },
+
 });

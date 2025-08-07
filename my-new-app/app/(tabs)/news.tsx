@@ -1,65 +1,106 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, RefreshControl } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
-import { Header } from '@/components/Header';
+import { ThemedText } from '@/components/ThemedText';
 import { StatusBarComponent } from '@/components/StatusBarComponent';
+import { Header } from '@/components/Header';
+import { ScreenTitle } from '@/components/ScreenTitle';
+import { MenuIcon } from '@/components/MenuIcon';
+import { IconSymbol } from '@/components/ui/IconSymbol';
+
 
 interface NewsItem {
   id: string;
   title: string;
   content: string;
-  imageUrl?: string;
-  createdAt: any;
+  date: string;
+  author: string;
+  priority: 'high' | 'medium' | 'low';
+
 }
 
 export default function NewsScreen() {
   const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Mock news data - replace with actual API call
+  const mockNews: NewsItem[] = [
+    {
+      id: '1',
+      title: 'New Volunteer Program Launch',
+      content: 'We are excited to announce the launch of our new community outreach volunteer program. Join us in making a difference in our local community.',
+      date: '2024-01-15',
+      author: 'Admin Team',
+      priority: 'high'
+    },
+    {
+      id: '2',
+      title: 'Holiday Schedule Update',
+      content: 'Please note our updated holiday schedule for the upcoming season. All programs will be adjusted accordingly.',
+      date: '2024-01-10',
+      author: 'Operations',
+      priority: 'medium'
+    },
+    {
+      id: '3',
+      title: 'App Update Available',
+      content: 'A new version of the app is now available with improved features and bug fixes. Please update to the latest version.',
+      date: '2024-01-08',
+      author: 'Tech Team',
+      priority: 'low'
+    }
+  ];
 
   useEffect(() => {
-    fetchNews();
+    loadNews();
   }, []);
 
-  const fetchNews = async () => {
-    try {
-      console.log('📰 Fetching news articles...');
-      const q = query(collection(db, 'news'), orderBy('createdAt', 'desc'));
-      const querySnapshot = await getDocs(q);
-      
-      const newsData: NewsItem[] = [];
-      querySnapshot.forEach((doc) => {
-        newsData.push({
-          id: doc.id,
-          ...doc.data()
-        } as NewsItem);
-      });
+  const loadNews = async () => {
+    // Replace with actual API call
+    setNews(mockNews);
+  };
 
-      console.log('✅ Fetched news articles:', newsData.length);
-      setNews(newsData);
-    } catch (error) {
-      console.error('❌ Error fetching news:', error);
-    } finally {
-      setLoading(false);
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadNews();
+    setRefreshing(false);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case 'high': return '#FF4444';
+      case 'medium': return '#FF8C00';
+      case 'low': return '#4CAF50';
+      default: return '#666';
     }
   };
 
-  const renderNewsItem = ({ item }: { item: NewsItem }) => (
-    <TouchableOpacity style={styles.newsItem}>
-      {item.imageUrl && (
-        <Image source={{ uri: item.imageUrl }} style={styles.newsImage} />
-      )}
-      <View style={styles.newsContent}>
-        <Text style={styles.newsTitle}>{item.title}</Text>
-        <Text style={styles.newsText} numberOfLines={3}>
-          {item.content}
-        </Text>
-        <Text style={styles.newsDate}>
-          {item.createdAt?.toDate?.()?.toLocaleDateString() || 'Recently'}
-        </Text>
+  const renderNewsItem = (item: NewsItem) => (
+    <View key={item.id} style={styles.newsItem}>
+      <View style={styles.newsHeader}>
+        <View style={styles.titleRow}>
+          <Text style={styles.newsTitle}>{item.title}</Text>
+          <View style={[styles.priorityBadge, { backgroundColor: getPriorityColor(item.priority) }]}>
+            <Text style={styles.priorityText}>{item.priority.toUpperCase()}</Text>
+          </View>
+        </View>
+        <View style={styles.metaRow}>
+          <Text style={styles.newsDate}>{formatDate(item.date)}</Text>
+          <Text style={styles.newsAuthor}>By {item.author}</Text>
+        </View>
       </View>
-    </TouchableOpacity>
+      <Text style={styles.newsContent}>{item.content}</Text>
+    </View>
+
   );
 
   return (
@@ -68,24 +109,28 @@ export default function NewsScreen() {
       <ThemedView style={styles.whiteBackground} />
       <StatusBarComponent />
       <Header title="News" />
-      
-      <View style={styles.content}>
-        <Text style={styles.title}>Latest News</Text>
-        
-        {loading ? (
-          <Text style={styles.loadingText}>Loading news...</Text>
-        ) : news.length === 0 ? (
-          <Text style={styles.emptyText}>No news articles yet.</Text>
-        ) : (
-          <FlatList
-            data={news}
-            renderItem={renderNewsItem}
-            keyExtractor={(item) => item.id}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.newsList}
-          />
-        )}
-      </View>
+      <ScreenTitle title="News & Updates" />
+      <MenuIcon />
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <ThemedView style={styles.content}>
+          {news.length > 0 ? (
+            news.map(renderNewsItem)
+          ) : (
+            <View style={styles.emptyState}>
+              <IconSymbol name="newspaper" size={48} color="#ccc" />
+              <Text style={styles.emptyText}>No news updates available</Text>
+              <Text style={styles.emptySubtext}>Pull down to refresh</Text>
+            </View>
+          )}
+        </ThemedView>
+      </ScrollView>
+
     </ThemedView>
   );
 }
@@ -93,80 +138,110 @@ export default function NewsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f5f5f5',
+
   },
   headerBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 120,
-    backgroundColor: '#FFB703',
+    height: 103,
+    backgroundColor: '#88C8E4',
   },
   whiteBackground: {
     position: 'absolute',
-    top: 120,
+    top: 103,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f5',
+  },
+  scrollView: {
+    flex: 1,
+    marginTop: 20,
   },
   content: {
-    flex: 1,
-    marginTop: 120,
     padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  loadingText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
-  },
-  emptyText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
-  },
-  newsList: {
-    paddingBottom: 20,
+    paddingTop: 20,
   },
   newsItem: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    marginBottom: 15,
-    overflow: 'hidden',
-    elevation: 2,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    elevation: 3,
   },
-  newsImage: {
-    width: '100%',
-    height: 200,
-    resizeMode: 'cover',
+  newsHeader: {
+    marginBottom: 12,
   },
-  newsContent: {
-    padding: 15,
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+
   },
   newsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 8,
     color: '#333',
+    flex: 1,
+    marginRight: 12,
   },
-  newsText: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-    marginBottom: 8,
+  priorityBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  priorityText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   newsDate: {
-    fontSize: 12,
+    fontSize: 14,
+    color: '#666',
+  },
+  newsAuthor: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  newsContent: {
+    fontSize: 16,
+    color: '#444',
+    lineHeight: 24,
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: '#666',
+    marginTop: 16,
+    fontWeight: '500',
+  },
+  emptySubtext: {
+    fontSize: 14,
     color: '#999',
+    marginTop: 8,
   },
 });
+
+
+
+
+
