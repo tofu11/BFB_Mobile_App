@@ -1,17 +1,17 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useChat } from '@/contexts/ChatContext';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Alert,
-    FlatList,
-    Modal,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
+import { useChat } from '../../contexts/ChatContext';
 
 interface Friend {
   id: string;
@@ -41,7 +41,7 @@ export default function FriendsScreen() {
   const [addingFriend, setAddingFriend] = useState(false);
 
   // Filter friends based on search query
-  const filteredFriends = friends.filter(friend =>
+  const filteredFriends = friends.filter((friend: Friend) =>
     (friend.displayName && friend.displayName.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (friend.chatId && friend.chatId.toLowerCase().includes(searchQuery.toLowerCase())) ||
     (friend.email && friend.email.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -71,11 +71,13 @@ export default function FriendsScreen() {
       if (!currentUser) return;
 
       // Create a consistent chat ID format (same as used in addFriend)
-      const chatId = `${Math.min(currentUser.uid, friend.id)}_${Math.max(currentUser.uid, friend.id)}`;
+      const chatId = currentUser.uid < friend.id
+        ? `${currentUser.uid}_${friend.id}`
+        : `${friend.id}_${currentUser.uid}`;
 
       // Check if chat already exists, if not create it
       const { doc: docRef, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
+      const { db } = await import('../../lib/firebase');
 
       const chatDoc = await getDoc(docRef(db, 'chats', chatId));
 
