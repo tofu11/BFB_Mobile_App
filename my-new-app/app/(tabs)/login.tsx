@@ -2,15 +2,15 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { SimpleIOSAuthService } from '../../lib/simpleIOSFix';
+import { RobustAuthService } from '../../lib/robustAuthService';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -21,7 +21,7 @@ export default function Login() {
   React.useEffect(() => {
     const testConnection = async () => {
       try {
-        const connected = await SimpleIOSAuthService.testConnection();
+        const connected = await RobustAuthService.testConnection();
         console.log('Firebase connection status:', connected);
       } catch (error) {
         console.log('Firebase connection test failed:', error);
@@ -33,7 +33,7 @@ export default function Login() {
   const testFirebaseConnection = async () => {
     try {
       setLoading(true);
-      const connected = await SimpleIOSAuthService.testConnection();
+      const connected = await RobustAuthService.testConnection();
       if (connected) {
         Alert.alert('Success', 'Firebase connection is working!');
       } else {
@@ -57,7 +57,7 @@ export default function Login() {
 
     try {
       console.log('Attempting to sign in with:', email);
-      const result = await SimpleIOSAuthService.signInWithEmail(email, password);
+      const result = await RobustAuthService.signInWithEmail(email, password);
       const user = result.user;
       console.log('Sign in successful:', user.uid);
       router.push('/(tabs)');

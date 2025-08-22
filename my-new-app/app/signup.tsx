@@ -1,18 +1,18 @@
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { SimpleIOSAuthService } from '../lib/simpleIOSFix';
+import { RobustAuthService } from '../lib/robustAuthService';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -39,7 +39,7 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      const result = await SimpleIOSAuthService.signUpWithEmail(email, password);
+      const result = await RobustAuthService.signUpWithEmail(email, password);
       const user = result.user;
       console.log('Sign up successful:', user.uid);
       Alert.alert('Success', 'Account created successfully!', [
