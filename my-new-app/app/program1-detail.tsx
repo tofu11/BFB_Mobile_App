@@ -248,7 +248,7 @@ export default function Program1DetailScreen() {
               <Text style={styles.label}>Gender:</Text>
               <View style={styles.genderContainer}>
                 <TouchableOpacity 
-                  style={[styles.genderButton, volunteerGender === 'Woman' && styles.genderButtonSelected]}
+                  style={[styles.genderButton, volunteerGender === 'Female' && styles.genderButtonSelected]}
                   onPress={() => setVolunteerGender('Woman')}
                 >
                   <Text style={[styles.genderButtonText, volunteerGender === 'Woman' && styles.genderButtonTextSelected]}>Woman</Text>
