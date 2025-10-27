@@ -249,15 +249,15 @@ export default function Program1DetailScreen() {
               <View style={styles.genderContainer}>
                 <TouchableOpacity 
                   style={[styles.genderButton, volunteerGender === 'Female' && styles.genderButtonSelected]}
-                  onPress={() => setVolunteerGender('Woman')}
+                  onPress={() => setVolunteerGender('Female')}
                 >
-                  <Text style={[styles.genderButtonText, volunteerGender === 'Woman' && styles.genderButtonTextSelected]}>Woman</Text>
+                  <Text style={[styles.genderButtonText, volunteerGender === 'Female' && styles.genderButtonTextSelected]}>Female</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.genderButton, volunteerGender === 'Man' && styles.genderButtonSelected]}
-                  onPress={() => setVolunteerGender('Man')}
+                  style={[styles.genderButton, volunteerGender === 'Male' && styles.genderButtonSelected]}
+                  onPress={() => setVolunteerGender('Male')}
                 >
-                  <Text style={[styles.genderButtonText, volunteerGender === 'Man' && styles.genderButtonTextSelected]}>Man</Text>
+                  <Text style={[styles.genderButtonText, volunteerGender === 'Male' && styles.genderButtonTextSelected]}>Male</Text>
                 </TouchableOpacity>
               </View>
               
