@@ -1,19 +1,18 @@
+import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  Alert, 
+import {
   ActivityIndicator,
-  TouchableOpacity,
-  StyleSheet,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  ScrollView
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { auth } from '@/lib/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { router } from 'expo-router';
+import { SimpleIOSAuthService } from '../lib/simpleIOSFix';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -40,7 +39,9 @@ export default function SignUp() {
     setLoading(true);
 
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const result = await SimpleIOSAuthService.signUpWithEmail(email, password);
+      const user = result.user;
+      console.log('Sign up successful:', user.uid);
       Alert.alert('Success', 'Account created successfully!', [
         { text: 'OK', onPress: () => router.replace('/(tabs)') }
       ]);

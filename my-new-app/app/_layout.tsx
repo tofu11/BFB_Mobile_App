@@ -7,6 +7,8 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
+import { ChatProvider } from '@/contexts/ChatContext';
+import { EventProvider } from '@/contexts/EventContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -29,18 +31,23 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="program1-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="program2-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="program3-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="program4-detail" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <EventProvider>
+      <ChatProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="program1-detail" options={{ headerShown: false }} />
+              <Stack.Screen name="program2-detail" options={{ headerShown: false }} />
+              <Stack.Screen name="program3-detail" options={{ headerShown: false }} />
+              <Stack.Screen name="program4-detail" options={{ headerShown: false }} />
+              <Stack.Screen name="chat/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <StatusBar style="auto" />
+          </ThemeProvider>
+        </GestureHandlerRootView>
+      </ChatProvider>
+    </EventProvider>
   );
 }
